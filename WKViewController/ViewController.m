@@ -9,6 +9,16 @@
 #import "ViewController.h"
 #import "WKSectionView.h"
 #import "TestViewCotroller.h"
+
+#define TABLEVIEW_CONTENTINSET_TOP 400
+#define PANVIEW_SIZE_HEIGHT TABLEVIEW_CONTENTINSET_TOP+10
+#define TABLEVIEW_HIDE_CONTENTSETOFFY -TABLEVIEW_CONTENTINSET_TOP-30
+#define DEVICE_SCREEN_HEIGHT self.view.frame.size.height
+#define DEVICE_SCREEN_WIDTH self.view.frame.size.width
+#define TABLEVIEW_HIDE_ANIMATIONS_NSTIMEINTERVAL 0.3
+
+
+
 @interface ViewController ()<UITableViewDelegate,UITableViewDataSource,UIScrollViewDelegate>
 {
     UIImageView  *_backImageView;
@@ -18,48 +28,29 @@
 }
 @end
 
-
-
 @implementation ViewController
-
-
-
 -(void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     if (_hide) {
-
-       
-        
-        
         _panView.hidden = NO;
-
         _hide = NO;
-        NSLog(@"%@",_panView);
-        [_tableView setContentOffset:CGPointMake(0, -400) animated:YES];
-
-        [UIView animateWithDuration:0.3 animations:^{
-            UIEdgeInsets edgeInset = UIEdgeInsetsMake(400, 0, 0, 0);
+        [_tableView setContentOffset:CGPointMake(0, -TABLEVIEW_CONTENTINSET_TOP) animated:YES];
+        [UIView animateWithDuration:TABLEVIEW_HIDE_ANIMATIONS_NSTIMEINTERVAL animations:^{
+            UIEdgeInsets edgeInset = UIEdgeInsetsMake(TABLEVIEW_CONTENTINSET_TOP, 0, 0, 0);
             _tableView.contentInset = edgeInset;
-            [_tableView setContentOffset:CGPointMake(0, -400) animated:YES];
+            [_tableView setContentOffset:CGPointMake(0, -TABLEVIEW_CONTENTINSET_TOP) animated:YES];
             [_tableView scrollsToTop];
-
-            _panView.frame = CGRectMake(0, 0, self.view.frame.size.width, 360);
+            _panView.frame = CGRectMake(0, 0, DEVICE_SCREEN_WIDTH, PANVIEW_SIZE_HEIGHT);
         }];
-
-        
-
     }
-
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    
     [self tableView];
     _hide = NO;
-    
 }
 
 -(void)tableView
@@ -67,11 +58,10 @@
     _tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStyleGrouped];
     _tableView.delegate = self;
     _tableView.dataSource = self;
-    UIEdgeInsets edgeInset = UIEdgeInsetsMake(400, 0, 0, 0);
+    UIEdgeInsets edgeInset = UIEdgeInsetsMake(TABLEVIEW_CONTENTINSET_TOP, 0, 0, 0);
     _tableView.contentInset = edgeInset;
     _tableView.backgroundColor = [UIColor clearColor];
     _tableView.backgroundView = [self backViewForTableView];
-//    _tableView.bounces = NO;
     [self.view addSubview:_tableView];
     
 }
@@ -81,7 +71,7 @@
     UIView * backView = [[UIView alloc] initWithFrame:self.view.bounds];
     _backImageView = [[UIImageView alloc] initWithFrame:backView.bounds];
     _backImageView.image = [UIImage imageNamed:@"bt_mymusic_time_bg_afternoon.jpg"];
-    _panView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 360)];
+    _panView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_SCREEN_WIDTH, PANVIEW_SIZE_HEIGHT)];
     _panView.backgroundColor = [UIColor redColor];
     [_backImageView addSubview:_panView];
     [backView addSubview:_backImageView];
@@ -111,8 +101,7 @@
 
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    WKSectionView *sectionView = [[WKSectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 120)];
-//    sectionView.backgroundColor = [UIColor whiteColor];
+    WKSectionView *sectionView = [[WKSectionView alloc] initWithFrame:CGRectMake(0, 0, DEVICE_SCREEN_WIDTH, 120)];
     return sectionView;
 }
 
@@ -129,89 +118,57 @@
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     CGFloat contentOffsetY = scrollView.contentOffset.y;
-//    NSLog(@"contentOffsetY%g:",contentOffsetY);
     if (_hide) {
         return;
     }
-    if (contentOffsetY >= -400)
+    if (contentOffsetY >= -TABLEVIEW_CONTENTINSET_TOP)
     {
-        _backImageView.frame = CGRectMake(0, -contentOffsetY-400, self.view.frame.size.width, self.view.frame.size.height);
-//        _tableView.bounces = NO;
-//        NSLog(@"%@",NSStringFromCGRect(_backImageView.frame));
+        _backImageView.frame = CGRectMake(0, -contentOffsetY-TABLEVIEW_CONTENTINSET_TOP, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT);
         _tableView.showsVerticalScrollIndicator = YES;
     }
     else
     {
-       
         _tableView.showsVerticalScrollIndicator = NO;
         _tableView.bounces = YES;
     }
-    if (contentOffsetY <= -400)
+    if (contentOffsetY <= -TABLEVIEW_CONTENTINSET_TOP)
     {
         if (!_hide) {
-            _panView.frame = CGRectMake(0, contentOffsetY+400, self.view.frame.size.width, 360);
+            _panView.frame = CGRectMake(0, contentOffsetY+TABLEVIEW_CONTENTINSET_TOP, DEVICE_SCREEN_WIDTH, PANVIEW_SIZE_HEIGHT);
         }
     }
     else
     {
-        _panView.frame = CGRectMake(0, 0, self.view.frame.size.width, 360);
+        _panView.frame = CGRectMake(0, 0,DEVICE_SCREEN_WIDTH, PANVIEW_SIZE_HEIGHT);
     }
-//    if (condition) {
-//        <#statements#>
-//    }
-//    NSLog(@"%@",NSStringFromUIEdgeInsets(scrollView.scrollIndicatorInsets));
-    
 }
-
-
-//-(void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
-//{
-////    [scrollView scrollsToTop];
-//
-//}
 
 -(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     CGFloat contentOffsetY = scrollView.contentOffset.y;
-
-    if (contentOffsetY < -430) {
+    if (contentOffsetY < TABLEVIEW_HIDE_CONTENTSETOFFY) {
         if (!_hide) {
             _hide = YES;
+        [UIView animateWithDuration:TABLEVIEW_HIDE_ANIMATIONS_NSTIMEINTERVAL animations:^{
+            UIEdgeInsets edgeInset = UIEdgeInsetsMake(DEVICE_SCREEN_HEIGHT, 0, 0, 0);
+            _tableView.contentInset = edgeInset;
 
-        [UIView animateWithDuration:0.3 animations:^{
-                NSLog(@"%@",_panView);
-//                                _tableView.contentOffset = CGPointMake(0, -self.view.frame.size.height);
-                UIEdgeInsets edgeInset = UIEdgeInsetsMake(self.view.frame.size.height, 0, 0, 0);
-                _tableView.contentInset = edgeInset;
+            [_tableView scrollRectToVisible:CGRectMake(0, -TABLEVIEW_CONTENTINSET_TOP, DEVICE_SCREEN_WIDTH, TABLEVIEW_CONTENTINSET_TOP/2) animated:YES];
 
-                [_tableView scrollRectToVisible:CGRectMake(0, -400, self.view.frame.size.width, -300) animated:YES];
-
-                
-                _panView.frame = CGRectMake(0, -415, self.view.frame.size.width, 360);
-            } completion:^(BOOL finished) {
+            
+            _panView.frame = CGRectMake(0, -PANVIEW_SIZE_HEIGHT,DEVICE_SCREEN_WIDTH, PANVIEW_SIZE_HEIGHT);
+        } completion:^(BOOL finished) {
                 [self presentViewController:[[TestViewCotroller alloc] init] animated:NO completion:nil];
                 _panView.hidden = YES;
-//                [scrollView scrollsToTop];
-
-
             }];
-           
-            [scrollView setContentOffset:CGPointMake(0, -self.view.frame.size.height) animated:YES];
-
+            [scrollView setContentOffset:CGPointMake(0, -DEVICE_SCREEN_HEIGHT) animated:YES];
         }
         return;
     }
-    else
-    {
-       
-
-    }
-
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end
